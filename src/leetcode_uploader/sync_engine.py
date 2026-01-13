@@ -1,36 +1,28 @@
 import os
 import time
 from typing import List, Dict
-from src.leetcode_client import LeetCodeClient
-from src.github_client import GitHubClient
+from .leetcode_client import LeetCodeClient
+from .github_client import GitHubClient
 
 class SyncEngine:
     def __init__(self, leetcode_client: LeetCodeClient, github_client: GitHubClient):
         self.lc = leetcode_client
         self.gh = github_client
+        self.verified_categories = set()
         
-    def initialize_repo(self):
-        """Creates the basic directory structure (Easy, Medium, Hard) on GitHub."""
-        directories = ["Easy", "Medium", "Hard"]
-        
-        print("🚀 Initializing repository structure...")
-        
-        for category in directories:
-            path = f"{category}/README.md"
+    def _ensure_category_exists(self, category: str):
+        """Checks if Easy/Medium/Hard directory exists, creates if missing."""
+        if category in self.verified_categories:
+            return
+            
+        path = f"{category}/README.md"
+        if not self.gh.get_file_sha(path):
+            print(f"📁 Creating category directory: {category}...")
             content = f"# {category} Problems\n\nThis directory contains all my {category.lower()} difficulty LeetCode solutions."
             message = f"chore: initialize {category} directory"
+            self.gh.create_or_update_file(path, content, message)
             
-            print(f"Creating {path}...")
-            success = self.gh.create_or_update_file(path, content, message)
-            if success:
-                print(f"✅ Created {category} folder.")
-            else:
-                print(f"❌ Failed to create {category} folder.")
-            
-            # Small delay to avoid hitting rate limits too fast (though GitHub is quite generous)
-            time.sleep(0.5)
-
-        print("\n✨ Repository structure initialized successfully!")
+        self.verified_categories.add(category)
 
     def _get_file_extension(self, language: str) -> str:
         """Maps LeetCode language names to file extensions."""
@@ -135,6 +127,9 @@ class SyncEngine:
             q_full_details = self.lc.get_question_details(title_slug)
             difficulty = q_full_details['difficulty']
             frontend_id = q_full_details['questionFrontendId']
+            
+            # Ensure the category folder (Easy/Medium/Hard) exists
+            self._ensure_category_exists(difficulty)
             
             # 3. Construct Paths
             safe_title = title.replace(" ", "-").replace("/", "-")

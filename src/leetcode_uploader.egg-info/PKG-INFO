@@ -1,3 +1,16 @@
+Metadata-Version: 2.1
+Name: leetcode-uploader
+Version: 1.0.0
+Summary: A professional CLI tool to sync LeetCode solutions to GitHub automatically.
+Author-email: Hetul Patel <your.email@example.com>
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: requests
+Requires-Dist: python-dotenv
+
 # LeetCode Uploader
 
 A automated CLI tool designed to sync your LeetCode solutions to a GitHub repository effortlessly.

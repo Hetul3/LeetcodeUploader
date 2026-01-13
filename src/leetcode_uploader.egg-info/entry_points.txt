@@ -1,0 +1,2 @@
+[console_scripts]
+leetcode-sync = leetcode_uploader.cli:main

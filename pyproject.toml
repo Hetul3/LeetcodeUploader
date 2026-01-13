@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "leetcode-uploader"
+version = "1.0.0"
+authors = [
+  { name="Hetul Patel", email="your.email@example.com" },
+]
+description = "A professional CLI tool to sync LeetCode solutions to GitHub automatically."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "requests",
+    "python-dotenv",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.scripts]
+leetcode-sync = "leetcode_uploader.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["leetcode_uploader*"]

@@ -17,12 +17,22 @@ class GitHubClient:
             "Accept": "application/vnd.github.v3+json"
         }
 
+    def _handle_response(self, response: requests.Response):
+        if response.status_code == 401:
+            raise Exception("GitHub Authentication Failed: Invalid GITHUB_TOKEN.")
+        if response.status_code == 404:
+            raise Exception(f"GitHub Repository Not Found: {self.repo}. Check your GITHUB_REPO name.")
+        response.raise_for_status()
+
     def get_file_sha(self, path: str) -> Optional[str]:
         """Check if a file exists and return its SHA (needed for updates)."""
         url = f"{self.BASE_URL}/repos/{self.repo}/contents/{path}"
         response = requests.get(url, headers=self.headers)
         if response.status_code == 200:
             return response.json().get("sha")
+        if response.status_code == 404:
+            return None
+        self._handle_response(response)
         return None
 
     def get_file_content(self, path: str) -> Optional[str]:

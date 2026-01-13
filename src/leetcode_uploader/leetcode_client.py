@@ -22,9 +22,17 @@ class LeetCodeClient:
             json={"query": query, "variables": variables or {}},
             headers=self.headers
         )
+        
+        if response.status_code == 403:
+            raise Exception("LeetCode Authentication Failed: LEETCODE_SESSION or CSRF_TOKEN is expired or invalid.")
+            
         response.raise_for_status()
         data = response.json()
         if "errors" in data:
+            # Check for common auth errors in GraphQL response
+            msg = str(data['errors'])
+            if "not authenticated" in msg.lower() or "not signed in" in msg.lower():
+                raise Exception("LeetCode Session Expired: Please update your LEETCODE_SESSION and CSRF_TOKEN.")
             raise Exception(f"GraphQL Errors: {data['errors']}")
         return data["data"]
 
