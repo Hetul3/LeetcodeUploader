@@ -85,6 +85,7 @@ class LeetCodeClient:
             questionId
             questionFrontendId
             title
+            titleSlug
             difficulty
             content
             topicTags {

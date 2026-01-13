@@ -25,6 +25,16 @@ class GitHubClient:
             return response.json().get("sha")
         return None
 
+    def get_file_content(self, path: str) -> Optional[str]:
+        """Fetch the content of a file from GitHub and decode it."""
+        url = f"{self.BASE_URL}/repos/{self.repo}/contents/{path}"
+        response = requests.get(url, headers=self.headers)
+        if response.status_code == 200:
+            content_base64 = response.json().get("content", "")
+            if content_base64:
+                return base64.b64decode(content_base64).decode("utf-8")
+        return None
+
     def create_or_update_file(self, path: str, content: str, commit_message: str) -> bool:
         """Uploads a file to GitHub. Encodes content to base64 automatically."""
         sha = self.get_file_sha(path)
@@ -40,10 +50,7 @@ class GitHubClient:
         
         if sha:
             data["sha"] = sha  # Required for updating existing files
-            print(f"Updating existing file: {path}")
-        else:
-            print(f"Creating new file: {path}")
-            
+        
         response = requests.put(url, json=data, headers=self.headers)
         
         if response.status_code in [200, 201]:
