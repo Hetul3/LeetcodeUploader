@@ -1,5 +1,7 @@
 import os
 import time
+import re
+import html2text
 from typing import List, Dict
 from .leetcode_client import LeetCodeClient
 from .github_client import GitHubClient
@@ -58,10 +60,23 @@ class SyncEngine:
         difficulty = question_data['difficulty']
         title = question_data['title']
         q_id = question_data['questionFrontendId']
-        content = question_data['content'] # This is HTML
+        html_content = question_data.get('content', '')
+        
+        # Convert HTML to clean Markdown
+        h = html2text.HTML2Text()
+        h.ignore_links = False
+        h.body_width = 0  # Disable line wrapping for cleaner examples
+        markdown_body = h.handle(html_content)
+
+        # Topic Tags
+        tags = [t['name'] for t in question_data.get('topicTags', [])]
+        tags_md = " ".join([f"`{t}`" for t in tags])
         
         runtime = submission_data['runtimeDisplay']
+        runtime_percentile = submission_data.get('runtimePercentile')
         memory = submission_data['memoryDisplay']
+        memory_percentile = submission_data.get('memoryPercentile')
+        
         lang = submission_data['lang']['verboseName']
         timestamp = submission_data['timestamp']
         date_str = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(int(timestamp)))
@@ -73,18 +88,27 @@ class SyncEngine:
             "Hard": "red"
         }.get(difficulty, "blue")
 
+        runtime_info = f"{runtime}"
+        if runtime_percentile:
+            runtime_info += f" (Better than {runtime_percentile:.2f}%)"
+            
+        memory_info = f"{memory}"
+        if memory_percentile:
+            memory_info += f" (Better than {memory_percentile:.2f}%)"
+
         md = f"""# [{q_id}. {title}](https://leetcode.com/problems/{question_data['titleSlug']}/)
 
 ![Difficulty: {difficulty}](https://img.shields.io/badge/Difficulty-{difficulty}-{diff_color})
+{tags_md}
 
 ## Problem Description
-{content}
+{markdown_body}
 
 ## Submission Details
 - **Status**: Accepted
 - **Language**: {lang}
-- **Runtime**: {runtime}
-- **Memory**: {memory}
+- **Runtime**: {runtime_info}
+- **Memory**: {memory_info}
 - **Date**: {date_str}
 
 ---
@@ -142,17 +166,27 @@ class SyncEngine:
             new_code = details['code'].strip()
             existing_code = self.gh.get_file_content(solution_path)
             
-            if existing_code and existing_code.strip() == new_code:
+            # Formulate the new README to compare
+            new_readme = self._format_markdown(q_full_details, details)
+            existing_readme = self.gh.get_file_content(readme_path)
+            
+            code_changed = not existing_code or existing_code.strip() != new_code
+            readme_changed = not existing_readme or existing_readme.strip() != new_readme.strip()
+
+            if not code_changed and not readme_changed:
                 print(f"{progress} {title} ({lang_verbose}): ✅ Up to date")
             else:
-                # Upload Solution
-                commit_msg = f"feat: add/update {lang_verbose} solution for {title}"
-                self.gh.create_or_update_file(solution_path, new_code, commit_msg)
+                action = "Updating" if (existing_code or existing_readme) else "Syncing"
+                # Upload Solution if changed
+                if code_changed:
+                    commit_msg = f"feat: update {lang_verbose} solution for {title}"
+                    self.gh.create_or_update_file(solution_path, new_code, commit_msg)
                 
-                # Upload/Update README
-                readme_content = self._format_markdown(q_full_details, details)
-                self.gh.create_or_update_file(readme_path, readme_content, f"docs: update README for {title}")
-                print(f"{progress} {title} ({lang_verbose}): 🚀 Synced")
+                # Upload/Update README if changed
+                if readme_changed:
+                    self.gh.create_or_update_file(readme_path, new_readme, f"docs: update README for {title}")
+                
+                print(f"{progress} {title} ({lang_verbose}): 🚀 {action}")
                 
             # Rate limiting delay
             time.sleep(0.5)

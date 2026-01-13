@@ -67,8 +67,10 @@ class LeetCodeClient:
           submissionDetails(submissionId: $submissionId) {
             runtime
             runtimeDisplay
+            runtimePercentile
             memory
             memoryDisplay
+            memoryPercentile
             code
             timestamp
             lang {
