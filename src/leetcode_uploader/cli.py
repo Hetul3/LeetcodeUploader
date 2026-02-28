@@ -12,17 +12,24 @@ ENV_PATH = os.path.join(CONFIG_DIR, ".env")
 
 def check_credentials():
     """Checks for all required env variables and returns them."""
-    # Create config dir if it doesn't exist
-    if not os.path.exists(CONFIG_DIR):
-        os.makedirs(CONFIG_DIR)
+    # Priority 1: Check for .env in current working directory
+    local_env = os.path.join(os.getcwd(), ".env")
+    if os.path.exists(local_env):
+        load_dotenv(local_env)
+        env_used = local_env
+    else:
+        # Priority 2: Check for .env in global config dir
+        if not os.path.exists(CONFIG_DIR):
+            os.makedirs(CONFIG_DIR)
+        load_dotenv(ENV_PATH)
+        env_used = ENV_PATH
         
-    load_dotenv(ENV_PATH)
     creds = {
-        "LEETCODE_SESSION": os.getenv("LEETCODE_SESSION"),
-        "LEETCODE_CSRF_TOKEN": os.getenv("LEETCODE_CSRF_TOKEN"),
-        "LEETCODE_USERNAME": os.getenv("LEETCODE_USERNAME"),
-        "GITHUB_TOKEN": os.getenv("GITHUB_TOKEN"),
-        "GITHUB_REPO": os.getenv("GITHUB_REPO")
+        "LEETCODE_SESSION": (os.getenv("LEETCODE_SESSION") or "").strip().strip('"').strip("'"),
+        "LEETCODE_CSRF_TOKEN": (os.getenv("LEETCODE_CSRF_TOKEN") or "").strip().strip('"').strip("'"),
+        "LEETCODE_USERNAME": (os.getenv("LEETCODE_USERNAME") or "").strip().strip('"').strip("'"),
+        "GITHUB_TOKEN": (os.getenv("GITHUB_TOKEN") or "").strip().strip('"').strip("'"),
+        "GITHUB_REPO": (os.getenv("GITHUB_REPO") or "").strip().strip('"').strip("'")
     }
     
     missing = [k for k, v in creds.items() if not v]
@@ -58,8 +65,12 @@ def handle_config(args):
 def handle_status(creds):
     """Shows the tool status, config location, and login info."""
     print(f"🚀 LeetCode Uploader v{VERSION}")
-    print(f"📂 Config Directory: {CONFIG_DIR}")
-    print(f"📄 Config File: {ENV_PATH}")
+    
+    # Identify which env file we're using
+    local_env = os.path.join(os.getcwd(), ".env")
+    current_env = local_env if os.path.exists(local_env) else ENV_PATH
+    
+    print(f"📄 Using Config: {current_env}")
     print("-" * 30)
     
     try:
@@ -127,9 +138,25 @@ def main():
             parser.print_help()
             
     except Exception as e:
-        print(f"\n❌ Error: {str(e)}")
-        if "Authentication Failed" in str(e) or "Session Expired" in str(e):
-            print("\nPlease update your credentials using 'leetcode-sync config KEY VALUE'.")
+        error_msg = str(e)
+        print(f"\n❌ Error: {error_msg}")
+        
+        lower_msg = error_msg.lower()
+        if "session" in lower_msg or "authentication failed" in lower_msg or "csrf" in lower_msg:
+            print("\n" + "!" * 50)
+            print("🔑 HOW TO REFRESH YOUR LEETCODE SESSION:")
+            print("1. Log in to LeetCode in your web browser.")
+            print("2. Right-click anywhere and select 'Inspect' (or press F12).")
+            print("3. Go to the 'Application' tab (Chrome/Edge) or 'Storage' tab (Firefox).")
+            print("4. Click on 'Cookies' in the left sidebar and select 'https://leetcode.com'.")
+            print("5. Copy the values for:")
+            print("   - LEETCODE_SESSION")
+            print("   - csrftoken")
+            print("\n6. Run these commands:")
+            print("   leetcode-sync config LEETCODE_SESSION <your_session>")
+            print("   leetcode-sync config LEETCODE_CSRF_TOKEN <your_csrftoken>")
+            print("!" * 50 + "\n")
+        
         sys.exit(1)
 
 if __name__ == "__main__":

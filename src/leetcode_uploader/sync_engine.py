@@ -141,24 +141,38 @@ class SyncEngine:
             title_slug = sub['titleSlug']
             title = sub['title']
             
-            # Fetch full details to check the language
-            details = self.lc.get_submission_details(sub_id)
-            lang_name = details['lang']['name']
-            lang_verbose = details['lang']['verboseName']
-            
             progress = f"[{i}/{total}]"
+            print(f"{progress} Checking {title}...", end="\r")
             
-            # 1. Deduplication: Only take the latest for this (Problem, Language)
-            pair_key = (title_slug, lang_name)
-            if pair_key in processed_pairs:
-                print(f"{progress} {title} ({lang_verbose}): ⏩ Skipped (Recent submission exists)")
+            try:
+                # Fetch full details to check the language
+                details = self.lc.get_submission_details(sub_id)
+                lang_name = details['lang']['name']
+                lang_verbose = details['lang']['verboseName']
+                
+                progress = f"[{i}/{total}]"
+                
+                # 1. Deduplication: Only take the latest for this (Problem, Language)
+                pair_key = (title_slug, lang_name)
+                if pair_key in processed_pairs:
+                    print(f"{progress} {title} ({lang_verbose}): ⏩ Skipped (Recent submission exists)")
+                    continue
+                processed_pairs.add(pair_key)
+                
+                # 2. Extract metadata
+                q_full_details = self.lc.get_question_details(title_slug)
+                if not q_full_details:
+                    print(f"{progress} {title}: ❌ Could not fetch question details")
+                    continue
+                    
+                difficulty = q_full_details['difficulty']
+                frontend_id = q_full_details['questionFrontendId']
+            except Exception as e:
+                if "Session Expired" in str(e):
+                    # Fatal error, re-raise to be handled by CLI
+                    raise e
+                print(f"[{i}/{total}] {title}: ❌ {str(e)}")
                 continue
-            processed_pairs.add(pair_key)
-            
-            # 2. Extract metadata
-            q_full_details = self.lc.get_question_details(title_slug)
-            difficulty = q_full_details['difficulty']
-            frontend_id = q_full_details['questionFrontendId']
             
             # Ensure the category folder (Easy/Medium/Hard) exists
             self._ensure_category_exists(difficulty)
