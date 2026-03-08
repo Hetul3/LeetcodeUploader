@@ -1,0 +1,189 @@
+:root {
+  --bg-color: #0d1117;
+  --card-bg: rgba(22, 27, 34, 0.7);
+  --text-color: #e6edf3;
+  --accent-color: #2f81f7;
+  --success-color: #3fb950;
+  --error-color: #f85149;
+  --input-bg: #010409;
+  --border-color: #30363d;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  width: 350px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  padding: 20px;
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+header {
+  text-align: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.logo .icon {
+  font-size: 24px;
+}
+
+h1 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  background: linear-gradient(90deg, #58a6ff, #bc8cff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+  font-size: 0.85rem;
+  color: #8b949e;
+}
+
+.status-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.status-indicator {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #8b949e;
+}
+
+.status-card.active .status-indicator {
+  background-color: var(--success-color);
+  box-shadow: 0 0 10px var(--success-color);
+}
+
+.status-card.error .status-indicator {
+  background-color: var(--error-color);
+  box-shadow: 0 0 10px var(--error-color);
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+label {
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: #8b949e;
+}
+
+input {
+  background-color: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 10px 12px;
+  color: var(--text-color);
+  font-size: 0.9rem;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(47, 129, 247, 0.3);
+}
+
+small {
+  font-size: 0.75rem;
+  color: #8b949e;
+}
+
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+.primary-btn {
+  background: linear-gradient(135deg, #238636, #2ea043);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    transform 0.1s,
+    filter 0.2s;
+  margin-top: 10px;
+}
+
+.primary-btn:hover {
+  filter: brightness(1.1);
+}
+
+.primary-btn:active {
+  transform: scale(0.98);
+}
+
+.message {
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  margin-top: 15px;
+  text-align: center;
+}
+
+.message.success {
+  background-color: rgba(63, 185, 80, 0.15);
+  color: var(--success-color);
+  border: 1px solid rgba(63, 185, 80, 0.3);
+}
+
+.message.error {
+  background-color: rgba(248, 81, 73, 0.15);
+  color: var(--error-color);
+  border: 1px solid rgba(248, 81, 73, 0.3);
+}
+
+.hidden {
+  display: none;
+}
+
+footer {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 0.75rem;
+  color: #8b949e;
+}

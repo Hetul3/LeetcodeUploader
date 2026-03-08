@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LeetCode Sync Settings</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="logo">
+          <span class="icon">🚀</span>
+          <h1>LeetCode Uploader</h1>
+        </div>
+        <p class="subtitle">Sync your success to GitHub</p>
+      </header>
+
+      <main>
+        <div class="status-card" id="statusCard">
+          <div class="status-indicator"></div>
+          <span id="statusText">Checking status...</span>
+        </div>
+
+        <div class="input-group">
+          <label for="ghToken">GitHub Personal Access Token</label>
+          <input
+            type="password"
+            id="ghToken"
+            placeholder="ghp_XXXXXXXXXXXXXXXXXXXX"
+          />
+          <small
+            ><a
+              href="https://github.com/settings/tokens/new?scopes=repo&description=LeetCode%20Uploader"
+              target="_blank"
+              >Create a token here</a
+            >
+            (needs 'repo' scope)</small
+          >
+        </div>
+
+        <div class="input-group">
+          <label for="ghRepo">GitHub Repository</label>
+          <input
+            type="text"
+            id="ghRepo"
+            placeholder="username/leetcode-solutions"
+          />
+        </div>
+
+        <button id="saveBtn" class="primary-btn">Save Configuration</button>
+        <div id="message" class="message hidden"></div>
+      </main>
+
+      <footer>
+        <p>Made with ❤️ for LeetCoders</p>
+      </footer>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>
